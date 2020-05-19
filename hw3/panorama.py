@@ -44,7 +44,20 @@ def harris_corners(img, window_size=3, k=0.04):
     dy = filters.sobel_h(img)
 
     ### YOUR CODE HERE
-    pass
+    dx_squared = dx**2
+    dy_squared = dy**2
+    dx_dy_multiplied = dx*dy
+    delta = window_size // 2
+    for i in range(delta, H - delta):
+        for j in range(delta, W - delta):
+            Sxx = np.sum(window*dx_squared[i-delta:i+delta+1, j-delta:j+delta+1])
+            Syy = np.sum(window*dy_squared[i-delta:i+delta+1, j-delta:j+delta+1])
+            Sxy = np.sum(window*dx_dy_multiplied[i-delta:i+delta+1, j-delta:j+delta+1])
+            
+            matrix = np.array([[Sxx, Sxy],
+                                [Sxy, Syy]])
+            
+            response[i][j] = np.linalg.det(matrix) - (k*((np.trace(matrix))**2))
     ### END YOUR CODE
 
     return response
