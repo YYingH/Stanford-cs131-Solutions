@@ -288,7 +288,24 @@ def hog_descriptor(patch, pixels_per_cell=(8,8)):
 
     # Compute histogram per cell
     ### YOUR CODE HERE
-    pass
+    H, W = patch.shape
+    M, N = pixels_per_cell
+    for i in range(rows):
+        for j in range(cols):
+            for m in range(M):
+                for n in range(N):
+                    distance_to_lower_bin = theta_cells[i, j, m, n] % degrees_per_bin
+                    division_ratio = float(distance_to_lower_bin) / degrees_per_bin
+                    lower_bin_num = (int((np.trunc(theta_cells[i,j,m,n])/degrees_per_bin)))%n_bins
+                    
+                    # the angles are circular
+                    
+                    upper_bin_num = (lower_bin_num+1)%n_bins
+                    cells[i,j,upper_bin_num] += (division_ratio*G_cells[i,j,m,n])
+                    cells[i,j,lower_bin_num] += ((1-division_ratio)*G_cells[i,j,m,n])
+            # Normalize
+            cells[i,j] = cells[i,j] / np.linalg.norm(cells[i,j])
+    block = cells.flatten()
     ### YOUR CODE HERE
 
     return block
@@ -324,7 +341,14 @@ def linear_blend(img1_warped, img2_warped):
     left_margin = np.argmax(img2_mask[out_H//2, :].reshape(1, out_W), 1)[0]
 
     ### YOUR CODE HERE
-    pass
+    merged = img1_warped + img2_warped
+    img1_weight = np.linspace(1,0,right_margin-left_margin+1)
+    img2_weight = np.linspace(0,1,right_margin-left_margin+1)
+    img1_warped[:,left_margin:right_margin+1] *= img1_weight
+    img2_warped[:,left_margin:right_margin+1] *= img2_weight
+    merged = img1_warped + img2_warped
+    overlap = (img1_mask + img2_mask)
+    merged = merged / np.maximum(overlap, 1)
     ### END YOUR CODE
 
     return merged
@@ -365,7 +389,20 @@ def stitch_multiple_images(imgs, desc_func=simple_descriptor, patch_size=5):
         matches.append(mtchs)
 
     ### YOUR CODE HERE
-    pass
+    Hs = [np.eye(3)]
+    for i in range(len(imgs) - 1):
+        Hs.append(ransac(keypoints[i], keypoints[i + 1], matches[i], threshold=1)[0])
+    for i in range(1, len(imgs)):
+        Hs[i] = Hs[i].dot(Hs[i - 1])
+    output_shape, offset = get_output_space(imgs[0], imgs[1:], Hs[1:])
+    imgs_warped = []
+    for i in range(len(imgs)):
+        imgs_warped.append(warp_image(imgs[i], Hs[i], output_shape, offset))
+        img_mask = (imgs_warped[-1] != -1)
+        imgs_warped[-1][~img_mask] = 0
+    panorama = imgs_warped[0]
+    for i in range(1, len(imgs)):
+        panorama = linear_blend(panorama, imgs_warped[i])
     ### END YOUR CODE
 
     return panorama
