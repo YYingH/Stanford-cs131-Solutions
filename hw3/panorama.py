@@ -13,7 +13,7 @@ from skimage.feature import corner_peaks
 from skimage.util.shape import view_as_blocks
 from scipy.spatial.distance import cdist
 from scipy.ndimage.filters import convolve
-
+import random
 from utils import pad, unpad, get_output_space, warp_image
 
 
@@ -86,7 +86,6 @@ def simple_descriptor(patch):
     std = np.std(patch)
     std = 1 if std == 0 else std
     feature = ((patch - np.mean(patch)) / std).flatten()
-    
     ### END YOUR CODE
     return feature
 
@@ -171,7 +170,7 @@ def fit_affine_matrix(p1, p2):
     p2 = pad(p2)
 
     ### YOUR CODE HERE
-    pass
+    H = np.linalg.lstsq(p2, p1, rcond=None)[0]
     ### END YOUR CODE
 
     # Sometimes numerical issues cause least-squares to produce the last
@@ -218,7 +217,26 @@ def ransac(keypoints1, keypoints2, matches, n_iters=200, threshold=20):
 
     # RANSAC iteration start
     ### YOUR CODE HERE
-    pass
+    for i in range(n_iters):
+        n_inliers = 0
+        current_inliers = np.zeros(N)
+        #1. Select random set of matches
+        random_indices = random.sample(range(N), n_samples)
+        random_matched1 = [matched1[i] for i in random_indices]
+        random_matched2 = [matched2[i] for i in random_indices]
+        #2. Compute affine transformation matrix
+        affine_transformation_matrix = np.linalg.lstsq(random_matched2,random_matched1,rcond=None)[0]
+        #3. Compute inliers
+        for i in range(len(matched1)):
+            if np.sum((matched1[i] - np.matmul(matched2[i],affine_transformation_matrix))**2) < threshold:
+                current_inliers[i] = 1
+                n_inliers +=1
+        #4. Keep the largest set of inliers
+        if n_inliers > np.sum(max_inliers):
+            max_inliers = np.copy(current_inliers)
+            H = affine_transformation_matrix
+        #5. Re-compute least-squares estimate on all of the inliers
+    max_inliers = max_inliers.astype('uint16')
     ### END YOUR CODE
     print(H)
     return H, orig_matches[max_inliers]
