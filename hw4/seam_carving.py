@@ -156,9 +156,7 @@ def remove_seam(image, seam):
     out = None
     H, W, C = image.shape
     ### YOUR CODE HERE
-    out = image.copy()
-    out[np.arange(H), seam, :] = -1
-    out = out[out!=-1].reshape(H,W-1,C)
+    out = image[np.arange(W) != seam[:, None]].reshape(H, W - 1, C)
     ### END YOUR CODE
     out = np.squeeze(out)  # remove last dimension if C == 1
 
@@ -466,7 +464,25 @@ def compute_forward_cost(image, energy):
     paths[0] = 0  # we don't care about the first row of paths
 
     ### YOUR CODE HERE
-    pass
+    cost = np.pad(cost, ((0,0),(1,1)), mode = 'constant', constant_values = float('inf'))
+    image = np.pad(image, ((0,0), (1,1)), mode = 'constant', constant_values = 0)
+    C = np.abs(image[:, 2:] - image[:, :-2])
+    C[:, 0] = 0
+    C[:, -1] = 0
+    for i in range(1, H):
+        Cl = C[i] + np.abs(image[i-1, 1:-1] - image[i, :-2])
+        Cl[0] = 0
+        Cr = C[i] + np.abs(image[i-1, 1:-1] - image[i, 2:])
+        Cr[-1] = 0
+        cand = np.array([
+            cost[i-1, :-2] + Cl,
+            cost[i-1, 1:-1] + C[i],
+            cost[i-1, 2:] + Cr
+        ])
+        paths[i] = np.argmin(cand, axis=0)
+        cost[i, 1:-1] = cand[paths[i], np.arange(W)] + energy[i]
+    paths[1:] -= 1
+    cost = cost[:, 1:-1]
     ### END YOUR CODE
 
     # Check that paths only contains -1, 0 or 1
@@ -536,7 +552,15 @@ def remove_object(image, mask):
     out = np.copy(image)
 
     ### YOUR CODE HERE
-    pass
+    while not np.all(mask == 0):
+        energy = energy_function(out)
+        energy[mask] -= 1000
+        cost, paths = compute_forward_cost(out, energy)
+        end = np.argmin(cost[-1])
+        seam = backtrack_seam(paths, end)
+        out = remove_seam(out, seam)
+        mask = remove_seam(mask, seam)
+    out = enlarge(out, W)
     ### END YOUR CODE
 
     assert out.shape == image.shape
