@@ -140,10 +140,20 @@ def hierarchical_clustering(features, k):
     assignments = np.arange(N, dtype=np.uint32)
     centers = np.copy(features)
     n_clusters = N
-
+    
     while n_clusters > k:
         ### YOUR CODE HERE
-        pass
+        dists = ((centers.reshape(-1, 1, D) - centers.reshape(1, -1, D))**2).sum(axis = -1)
+        np.fill_diagonal(dists, float('inf'))
+        i,j = np.unravel_index(np.argmin(dists), dists.shape)
+        if i>j:
+            i,j = j,i
+        assignments[assignments == j] = i
+        assignments[assignments == n_clusters -1] = j
+        centers[i] = features[assignments == i].mean(axis=0)
+        centers[j] = centers[-1]
+        centers = centers[:-1]
+        n_clusters -= 1
         ### END YOUR CODE
 
     return assignments
