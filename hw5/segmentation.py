@@ -45,7 +45,11 @@ def kmeans(features, k, num_iters=100):
 
     for n in range(num_iters):
         ### YOUR CODE HERE
-        pass
+        for i in range(N):
+            assignments[i] = np.argmin(((centers-features[i])**2).mean(axis = 1))
+        delta = np.eye(k)[assignments]
+        delta /= np.sum(delta, axis = 0)
+        centers = delta.T.dot(features)
         ### END YOUR CODE
 
     return assignments
@@ -81,7 +85,13 @@ def kmeans_fast(features, k, num_iters=100):
 
     for n in range(num_iters):
         ### YOUR CODE HERE
-        pass
+        # 2. Assign each point to the closest center
+        for i in range(N):
+            assignments[i] = np.argmin(((centers - features[i])**2).mean(axis = 1))
+        delta = np.eye(k)[assignments]
+        delta /= delta.sum(axis=0)
+        # 3. Compute new center of each cluster
+        centers = delta.T.dot(features)
         ### END YOUR CODE
 
     return assignments
