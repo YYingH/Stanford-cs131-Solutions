@@ -174,7 +174,7 @@ def color_features(img):
     features = np.zeros((H*W, C))
 
     ### YOUR CODE HERE
-    pass
+    features = img.reshape(-1,C)
     ### END YOUR CODE
 
     return features
@@ -203,7 +203,10 @@ def color_position_features(img):
     features = np.zeros((H*W, C+2))
 
     ### YOUR CODE HERE
-    pass
+    features[:,:C] = img.reshape(-1,C)
+    i,j = np.indices((H,W))
+    features[:,3], features[:,4] = i.reshape(-1), j.reshape(-1)
+    features = (features - features.mean(axis = 0))/features.std(axis=0)
     ### END YOUR CODE
 
     return features
@@ -219,7 +222,13 @@ def my_features(img):
     """
     features = None
     ### YOUR CODE HERE
-    pass
+    H, W, C = img.shape
+    color = img_as_float(img)
+    features = np.zeros((H*W, C+2))
+    features[:,:C] = img.reshape(-1,C)
+    i,j = np.indices((H,W))
+    features[:,3], features[:,4] = i.reshape(-1), j.reshape(-1)
+    features = (features - features.mean(axis = 0))/features.std(axis=0)
     ### END YOUR CODE
     return features
 
@@ -243,7 +252,8 @@ def compute_accuracy(mask_gt, mask):
 
     accuracy = None
     ### YOUR CODE HERE
-    pass
+    H, W = mask_gt.shape
+    accuracy = np.sum(mask_gt == mask) / (H * W)
     ### END YOUR CODE
 
     return accuracy
