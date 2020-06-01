@@ -26,8 +26,8 @@ def compute_distances(X1, X2):
     # in particular you should not use functions from scipy.
     #
     # HINT: Try to formulate the l2 distance using matrix multiplication
-
-    pass
+    
+    dists = np.sqrt((X1.reshape(M, 1, -1) - X2.reshape(1, N, -1))**2).sum(axis = -1)
     # END YOUR CODE
 
     assert dists.shape == (M, N), "dists should have shape (M, N), got %s" % dists.shape
