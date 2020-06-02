@@ -65,7 +65,11 @@ def predict_labels(dists, y_train, k=1):
         # label.
 
         # YOUR CODE HERE
-        pass
+        k_nearest_index = np.argsort(dists[i,:])[:k]
+        closest_y = y_train[k_nearest_index]
+
+        y_pred[i] = np.argmax(np.bincount(closest_y))
+        
         # END YOUR CODE
 
     return y_pred
@@ -111,7 +115,13 @@ def split_folds(X_train, y_train, num_folds):
 
     # YOUR CODE HERE
     # Hint: You can use the numpy array_split function.
-    pass
+    X = np.array(np.split(X_train, num_folds))
+    y = np.array(np.split(y_train, num_folds))
+    for i in range(num_folds):
+        X_trains[i] = X[np.arange(num_folds)!=i].reshape(-1, X_trains.shape[-1])
+        X_vals[i] = X[i]
+        y_trains[i] = y[np.arange(num_folds)!=i].reshape(-1, y_trains.shape[-1])
+        y_vals[i] = y[i]
     # END YOUR CODE
 
     return X_trains, y_trains, X_vals, y_vals
