@@ -200,7 +200,12 @@ class LDA(object):
         # Solve generalized eigenvalue problem for matrices `scatter_between` and `scatter_within`
         # Use `scipy.linalg.eig` instead of numpy's eigenvalue solver.
         # Don't forget to sort the values and vectors in descending order.
-        pass
+        self.mean = X.mean(axis=0)
+        X_centered = X - self.mean
+        e_vals, e_vecs = np.linalg.eig(X_centered.T.dot(X_centered) / (N-1))
+        i = np.argsort(e_vals)[::-1]
+        e_vals, e_vecs = e_vals[i], e_vecs[i]
+        
         # END YOUR CODE
 
         self.W_lda = e_vecs
@@ -237,7 +242,8 @@ class LDA(object):
         for i in np.unique(y):
             # YOUR CODE HERE
             # Get the covariance matrix for class i, and add it to scatter_within
-            pass
+            X_i = X[y==i]
+            scatter_within += X_i.T.dot(X_i)
             # END YOUR CODE
 
         return scatter_within
@@ -263,7 +269,10 @@ class LDA(object):
         mu = X.mean(axis=0)
         for i in np.unique(y):
             # YOUR CODE HERE
-            pass
+            X_i = X[y==i]
+            N_i = X[i].shape[0]
+            mu_i = X_i.mean(axis = 0)
+            scatter_between += N_i * (mu_i - mu).dot((mu_i - mu).T)
             # END YOUR CODE
 
         return scatter_between
@@ -282,7 +291,8 @@ class LDA(object):
         X_proj = None
         # YOUR CODE HERE
         # project onto a subspace of dimension `n_components` using `self.W_lda`
-        pass
+        X_centered = X - self.mean
+        X_proj = X_centered.dot(self.W_lda[:,:n_components])
         # END YOUR CODE
 
         assert X_proj.shape == (N, n_components), "X_proj doesn't have the right shape"
