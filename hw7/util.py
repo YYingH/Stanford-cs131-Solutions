@@ -83,8 +83,7 @@ def get_detector(part_h, part_w, parts, image_paths):
     avg_part = np.zeros((part_shape))
     image_paths = sorted(image_paths)
     for i, image_path in enumerate(image_paths):
-        image = io.imread('./face/' + image_path, as_gra
-                          y=True)
+        image = io.imread('./face/' + image_path, as_gray=True)
         part_r = parts[i][0]
         part_c = parts[i][1]
 #         print(image_path, part_r, part_w, part_r-part_h/2, part_r+part_h/2)
