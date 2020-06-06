@@ -68,10 +68,10 @@ def read_facial_labels(image_paths):
 
 
 def load_faces(image_paths, n):
-    face_shape = io.imread('./face/' + image_paths[0], as_grey=True).shape
+    face_shape = io.imread('./face/' + image_paths[0], as_gray=True).shape
     avg_face = np.zeros((face_shape))
     for image_path in image_paths:
-        image = io.imread('./face/' + image_path, as_grey=True)
+        image = io.imread('./face/' + image_path, as_gray=True)
         avg_face = np.asarray(image) + np.asarray(avg_face)
     avg_face = avg_face / n
     return face_shape, avg_face
@@ -83,7 +83,8 @@ def get_detector(part_h, part_w, parts, image_paths):
     avg_part = np.zeros((part_shape))
     image_paths = sorted(image_paths)
     for i, image_path in enumerate(image_paths):
-        image = io.imread('./face/' + image_path, as_grey=True)
+        image = io.imread('./face/' + image_path, as_gra
+                          y=True)
         part_r = parts[i][0]
         part_c = parts[i][1]
 #         print(image_path, part_r, part_w, part_r-part_h/2, part_r+part_h/2)
