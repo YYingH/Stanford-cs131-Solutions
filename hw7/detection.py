@@ -23,7 +23,9 @@ def hog_feature(image, pixel_per_cell=8):
         hogImage: an image representation of hog provided by skimage.
     """
     ### YOUR CODE HERE
-    pass
+    hogFeature, hogImage = feature.hog(image, 
+                                       pixels_per_cell = (pixel_per_cell, pixel_per_cell), 
+                                       visualize = True)
     ### END YOUR CODE
     return (hogFeature, hogImage)
 
@@ -62,7 +64,17 @@ def sliding_window(image, base_score, stepSize, windowSize, pixel_per_cell=8):
         mode='constant')
     response_map = np.zeros((H // stepSize + 1, W // stepSize + 1))
     ### YOUR CODE HERE
-    pass
+    for i in range(0, H+1, stepSize):
+        for j in range(0, W+1, stepSize):
+            score = feature.hog(
+                pad_image[i:i+winH, j:j+winW],
+                pixels_per_cell = (pixel_per_cell, pixel_per_cell),
+            ).dot(base_score)
+            response_map[i//stepSize, j//stepSize] = score
+            if score > max_score:
+                max_score, maxr, maxc = score, i, j
+    maxr, maxc = maxr - winH//2, maxc - winW//2
+    response_map = resize(response_map, (H, W))
     ### END YOUR CODE
 
     return (max_score, maxr, maxc, response_map)
@@ -97,7 +109,8 @@ def pyramid(image, scale=0.9, minSize=(200, 100)):
         # Use "break" to exit this loop if the next image will be smaller than
         # the supplied minimium size
         ### YOUR CODE HERE
-        pass
+        if image.shape[0] * scale < minSize[0] or image.shape[1] * scale < minSize[1]:
+            break
         ### END YOUR CODE
 
         # Compute the new dimensions of the image and resize it
@@ -134,7 +147,11 @@ def pyramid_score(image, base_score, shape, stepSize=20,
     max_response_map = np.zeros(image.shape)
     images = pyramid(image, scale)
     ### YOUR CODE HERE
-    pass
+    for scale, image in images:
+        score, r, c, response_map = sliding_window(image, base_score, stepSize, shape, pixel_per_cell)
+        if score > max_score:
+            max_score = score
+            maxr, maxc, max_response_map = r, c, response_map
     ### END YOUR CODE
     return max_score, maxr, maxc, max_scale, max_response_map
 
