@@ -177,7 +177,9 @@ def compute_displacement(part_centers, face_shape):
     """
     d = np.zeros((part_centers.shape[0], 2))
     ### YOUR CODE HERE
-    pass
+    d = np.array([face_shape[0]/2, face_shape[1]/2]) - part_centers
+    mu = d.mean(axis = 0).astype(int)
+    sigma = d.std(axis = 0)
     ### END YOUR CODE
     return mu, sigma
 
@@ -196,7 +198,8 @@ def shift_heatmap(heatmap, mu):
             new_heatmap: np array of (h,w).
     """
     ### YOUR CODE HERE
-    pass
+    heatmap = heatmap/np.max(heatmap)
+    new_heatmap = interpolation.shift(heatmap, mu)
     ### END YOUR CODE
     return new_heatmap
 
@@ -216,7 +219,10 @@ def gaussian_heatmap(heatmap_face, heatmaps, sigmas):
         new_image: an image np array of (h,w) after gaussian convoluted.
     """
     ### YOUR CODE HERE
-    pass
+    heatmap = heatmap_face.copy()
+    for h, sigma in zip(heatmaps, sigmas):
+        heatmap += gaussian(h, sigma)
+    r, c = np.unravel_index(np.argmax(heatmap), heatmap.shape)
     ### END YOUR CODE
     return heatmap, r, c
 
