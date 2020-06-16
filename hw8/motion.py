@@ -92,7 +92,7 @@ def iterative_lucas_kanade(img1, img2, keypoints,
 
     # Compute spatial gradients
     Iy, Ix = np.gradient(img1)
-
+    
     for y, x, gy, gx in np.hstack((keypoints, g)):
         v = np.zeros(2) # Initialize flow vector as zero vector
         y1 = int(round(y)); x1 = int(round(x))
@@ -100,7 +100,11 @@ def iterative_lucas_kanade(img1, img2, keypoints,
 
         # TODO: Compute inverse of G at point (x1, y1)
         ### YOUR CODE HERE
-        pass
+        A1 = Ix[y1-w:y1+w+1, x1-w:x1+w+1]
+        A2 = Iy[y1-w:y1+w+1, x1-w:x1+w+1]
+        A = np.c_[A1.reshape(-1,1), A2.reshape(-1,1)]
+        G = np.array([[np.sum(A1**2), np.sum(A1*A2)], [np.sum(A1*A2), np.sum(A2**2)]])
+        G_inv = np.linalg.inv(G)
         ### END YOUR CODE
 
         # iteratively update flow vector
@@ -111,7 +115,11 @@ def iterative_lucas_kanade(img1, img2, keypoints,
 
             # TODO: Compute bk and vk = inv(G) x bk
             ### YOUR CODE HERE
-            pass
+            if y2 >= img2.shape[0] or x2>img2.shape[1] or y1>img1.shape[0] or y1>img1.shape[1]:
+                continue
+            Ik = img2[y2,x2] - img1[y1,x1]
+            bk = np.array([np.sum(Ik*A1), np.sum(Ik*A2)])
+            vk = G_inv.dot(bk)
             ### END YOUR CODE
 
             # Update flow vector by vk
