@@ -49,7 +49,12 @@ def lucas_kanade(img1, img2, keypoints, window_size=5):
         y, x = int(round(y)), int(round(x))
 
         ### YOUR CODE HERE
-        pass
+        A1 = Ix[y-w:y+w+1, x-w:x+w+1]
+        A2 = Iy[y-w:y+w+1, x-w:x+w+1]
+        A = np.c_[A1.reshape(-1,1), A2.reshape(-1,1)]
+        b = -It[y-w:y+w+1, x-w:x+w+1].reshape(-1,1)
+        d = np.dot(np.linalg.inv(A.T.dot(A)), A.T.dot(b))
+        flow_vectors.append(d.flatten())
         ### END YOUR CODE
 
     flow_vectors = np.array(flow_vectors)
